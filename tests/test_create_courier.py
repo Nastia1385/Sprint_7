@@ -32,20 +32,6 @@ class TestCreateCourier:
         assert response2.status_code == 409
         # первый курьер уже создан фикстурой, очистка авто
 
-    @allure.title("Обязательные поля при создании курьера")
-    @pytest.mark.parametrize("missing_field", ["login", "password"])
-    def test_missing_required_fields(self, missing_field, clean_courier):
-        courier_api = CourierAPI(BASE_URL)
-
-        with allure.step(f"Создать курьера без поля {missing_field}"):
-            if missing_field == "login":
-                response = courier_api.create_courier("", "pass123", "Test")
-            else:
-                response = courier_api.create_courier("test_login", "", "Test")
-
-        with allure.step("Проверить, что вернулась ошибка 400 с соответствующим сообщением"):
-            assert response.status_code == 400 and "Недостаточно данных" in response.json()["message"]
-
     @allure.title("Создание курьера без firstName успешно")
     def test_create_courier_without_firstname_success(self, clean_courier):
         courier_api = CourierAPI(BASE_URL)
@@ -60,4 +46,16 @@ class TestCreateCourier:
         with allure.step("Проверить успешный ответ"):
             assert response.status_code == 201 and response.json() == {"ok": True}
 
-        
+    @allure.title("Обязательные поля при создании курьера")
+    @pytest.mark.parametrize("login,password,expected_error", [
+        ("", "pass123", "Недостаточно данных"),
+        ("test_login", "", "Недостаточно данных"),
+    ])
+    def test_missing_required_fields(self, login, password, expected_error, clean_courier):
+        courier_api = CourierAPI(BASE_URL)
+
+        with allure.step(f"Создать курьера с логином='{login}' и паролем='{password}'"):
+            response = courier_api.create_courier(login, password, "Test")
+
+        with allure.step("Проверить, что вернулась ошибка 400 с соответствующим сообщением"):
+            assert response.status_code == 400 and expected_error in response.json()["message"]

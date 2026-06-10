@@ -8,21 +8,14 @@ from scooter_api.courier_api import CourierAPI
 class TestLoginCourier:
 
     @allure.title("Успешная авторизация курьера")
-    def test_login_courier_success(self, clean_courier):
+    def test_login_courier_success(self, existing_courier, clean_courier):
+        login, password, courier_api = existing_courier
         courier_api = CourierAPI(BASE_URL)
-        courier_data = random_courier_data()
 
-        with allure.step(f"Создать курьера с данными: {courier_data['login']}"):
-            courier_api.create_courier(
-                courier_data["login"],
-                courier_data["password"],
-                courier_data["firstName"]
-            )
-
-        with allure.step(f"Авторизоваться с логином {courier_data['login']}"):
+        with allure.step(f"Авторизоваться с логином {login}"):
             login_response = courier_api.login_courier(
-                courier_data["login"],
-                courier_data["password"]
+                login,
+                password
             )
 
         with allure.step("Проверить успешную авторизацию и наличие id в ответе"):
@@ -68,7 +61,6 @@ class TestLoginCourier:
 
         with allure.step("Проверить, что вернулась ошибка 400 с сообщением о недостаточности данных"):
             assert response.status_code == 400 and "Недостаточно данных" in response.json()["message"]
-
 
     @allure.title("Авторизация без пароля")
     def test_login_missing_password(self, clean_courier):
