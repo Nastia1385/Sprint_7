@@ -8,12 +8,12 @@ from scooter_api.courier_api import CourierAPI
 class TestLoginCourier:
 
     @allure.title("Успешная авторизация курьера")
-    def test_login_courier_success(self, create_courier):
+    def test_login_courier_success(self, create_courier_only, cleanup_couriers):
         courier_api = CourierAPI(BASE_URL)
 
         with allure.step("Создать курьера"):
             courier_data = random_courier_data()
-            create_courier(
+            create_courier_only(
                 courier_data["login"],
                 courier_data["password"],
                 courier_data["firstName"]
@@ -29,12 +29,12 @@ class TestLoginCourier:
             assert login_response.status_code == 200 and "id" in login_response.json()
 
     @allure.title("Авторизация с неверным паролем")
-    def test_login_wrong_password(self, create_courier):
+    def test_login_wrong_password(self, create_courier_only):
         courier_api = CourierAPI(BASE_URL)
         courier_data = random_courier_data()
 
         with allure.step(f"Создать курьера с данными: {courier_data['login']}"):
-            create_courier(
+            create_courier_only(
                 courier_data["login"],
                 courier_data["password"],
                 courier_data["firstName"]
@@ -60,7 +60,7 @@ class TestLoginCourier:
             assert login_response.status_code == 404 and login_response.json()["message"] == "Учетная запись не найдена"
 
     @allure.title("Авторизация без логина")
-    def test_login_missing_login(self, create_courier):
+    def test_login_missing_login(self, create_courier_only):
         courier_api = CourierAPI(BASE_URL)
 
         with allure.step("Попробовать авторизоваться без логина"):
@@ -70,7 +70,7 @@ class TestLoginCourier:
             assert response.status_code == 400 and "Недостаточно данных" in response.json()["message"]
 
     @allure.title("Авторизация без пароля")
-    def test_login_missing_password(self, create_courier):
+    def test_login_missing_password(self, create_courier_only):
         courier_api = CourierAPI(BASE_URL)
 
         with allure.step("Попробовать авторизоваться без пароля"):
